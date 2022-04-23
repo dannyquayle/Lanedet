@@ -15,8 +15,8 @@ from PIL import Image
 torch.backends.cudnn.benchmark = True
 
 # From cuLANE, Change this line if you are using TuSimple
-cls_num_per_lane = 18
-griding_num = 200
+cls_num_per_lane = 22
+griding_num = 150
 backbone =18
 
 net = parsingNet(pretrained = False,backbone='18', cls_dim = (griding_num+1,cls_num_per_lane,4),
@@ -38,7 +38,7 @@ net.load_state_dict(compatible_state_dict, strict=False)
 net.eval()
 
 # Test Input Image
-img = torch.zeros(1, 3, 288, 800)  # image size(1,3,320,192) iDetection
+img = torch.zeros(1, 3, 352, 640)  # image size(1,3,320,192) iDetection
 y = net(img)  # dry run
 
 ts = torch.jit.trace(net, img)

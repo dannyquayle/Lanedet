@@ -86,11 +86,36 @@ def train(net, data_loader, loss_dict, optimizer, scheduler,logger, epoch, metri
                                     net_time = '%.3f' % float(t_net_1 - t_net_0), 
                                     **kwargs)
         t_data_0 = time.time()
-        
 
+def test(net, data_loader, dataset, work_dir, logger, use_aux=True):
+    output_path = os.path.join(work_dir, 'culane_eval_tmp')
+    if not os.path.exists(output_path):
+        os.mkdir(output_path)
+    net.eval()
+    if dataset['name'] == 'CULane':
+        for i, data in enumerate(dist_tqdm(data_loader)):
+            imgs, names = data
+            imgs = imgs.cuda()
+            with torch.no_grad():
+                out = net(imgs)
+            if len(out) == 2 and use_aux:
+                out, seg_out = out
 
-
-
+            generate_lines(out,imgs[0,0].shape,names,output_path,dataset['griding_num'],localization_type = 'rel',flip_updown = True)
+        res = call_culane_eval(dataset['data_root'], 'culane_eval_tmp', work_dir)
+        TP,FP,FN = 0,0,0
+        for k, v in res.items():
+            val = float(v['Fmeasure']) if 'nan' not in v['Fmeasure'] else 0
+            val_tp,val_fp,val_fn = int(v['tp']),int(v['fp']),int(v['fn'])
+            TP += val_tp
+            FP += val_fp
+            FN += val_fn
+            logger.log('k:{} val{}'.format(k,val))
+        P = TP * 1.0/(TP + FP)
+        R = TP * 1.0/(TP + FN)
+        F = 2*P*R/(P + R)
+        logger.log('F:{}'.format(F))
+        return F
 
 if __name__ == "__main__":
     torch.backends.cudnn.benchmark = True

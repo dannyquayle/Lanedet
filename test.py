@@ -20,7 +20,7 @@ if __name__ == "__main__":
     assert cfg.backbone in ['18','34','50','101','152','50next','101next','50wide','101wide']
 
     if cfg.dataset == 'CULane':
-        cls_num_per_lane = 18
+        cls_num_per_lane = 22
     elif cfg.dataset == 'Tusimple':
         cls_num_per_lane = 56
     else:

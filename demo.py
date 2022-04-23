@@ -18,7 +18,7 @@ if __name__ == "__main__":
     assert cfg.backbone in ['18','34','50','101','152','50next','101next','50wide','101wide']
 
     if cfg.dataset == 'CULane':
-        cls_num_per_lane = 18
+        cls_num_per_lane = 22
     elif cfg.dataset == 'Tusimple':
         cls_num_per_lane = 56
     else:
@@ -39,7 +39,7 @@ if __name__ == "__main__":
     net.eval()
 
     img_transforms = transforms.Compose([
-        transforms.Resize((288, 800)),
+        transforms.Resize((352, 640)),
         transforms.ToTensor(),
         transforms.Normalize((0.485, 0.456, 0.406), (0.229, 0.224, 0.225)),
     ])
@@ -66,7 +66,7 @@ if __name__ == "__main__":
             with torch.no_grad():
                 out = net(imgs)
 
-            col_sample = np.linspace(0, 800 - 1, cfg.griding_num)
+            col_sample = np.linspace(0, 640 - 1, cfg.griding_num)
             col_sample_w = col_sample[1] - col_sample[0]
 
 
@@ -86,7 +86,7 @@ if __name__ == "__main__":
                 if np.sum(out_j[:, i] != 0) > 2:
                     for k in range(out_j.shape[0]):
                         if out_j[k, i] > 0:
-                            ppp = (int(out_j[k, i] * col_sample_w * img_w / 800) - 1, int(img_h * (row_anchor[cls_num_per_lane-1-k]/288)) - 1 )
+                            ppp = (int(out_j[k, i] * col_sample_w * img_w / 640) - 1, int(img_h * (row_anchor[cls_num_per_lane-1-k]/352)) - 1 )
                             cv2.circle(vis,ppp,5,(0,255,0),-1)
             vout.write(vis)
         
